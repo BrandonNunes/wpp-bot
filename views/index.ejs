@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js" integrity="sha384-KAZ4DtjNhLChOB/hxXuKqhMLYvx3b5MlT55xPEiNmREKRzeEm+RVPlTnAn0ajQNs" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        #qrcode {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+<header class="bg-primary p-3 text-light d-flex justify-content-between" ><h4>Bot WppConnect</h4> <p>Logado como: <span id="sessao" ><%= session %></span></p></header>
+    <main id="app" class="container-fluid p-3" >
+        <div class="grid text-center row">
+            <div class="g-col-6 g-col-md-4 col">
+                <div class="card p-2" style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">Sessão</h5>
+                        <img id="qrcode" src="" alt="qrcode">
+                        <h6>status: <span id="status-atual"><%= status ? status : '' %></span></h6>
+                    </div>
+                    <button type="button" class="btn btn-primary"
+                        v-on:click="iniciarSesssao()">
+                        Iniciar/Reiniciar
+                    </button>
+                </div>
+            </div>
+            <%= session %>
+            <div class="g-col-6 g-col-md-4 col">
+                <div class="card p-2" style="width: 18rem;">
+                    <form @submit.prevent="enviarmensagem"  method="post" >
+                        <div class="card-body">
+    <!--                        <h5 class="card-title">Enviar Mensagem</h5>-->
+                            <h6 class="card-subtitle mb-2 text-muted">Enviar mensagem</h6>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon1">123</span>
+                                <input v-model="number" name="number"
+                                       id="numero" type="text"  class="form-control"  placeholder="Telefone" aria-label="Telefone" aria-describedby="basic-addon1">
+                            {{number}}
+                            </div>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text" id="basic-addon2">TXT</span>
+                                <input v-model="message" id="mensagem" name="message"
+                                       type="text"  class="form-control"  placeholder="Sua mensagem" aria-label="Sua mensagem" aria-describedby="basic-addon1">
+                            {{message}}
+                            </div>
+                        </div>
+                        <button @click="enviarmensagem"  class="btn btn-success">Enviar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+<script >
+
+
+ // import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
+  const { createApp } = Vue
+  const socket = io(`${window.location.origin}`)
+ socket.on('connect', function() {
+   console.log('Connected');
+   socket.emit('events', { test: 'test' });
+   socket.emit('identity', 0, response =>
+     console.log('Identity:', response),
+   );
+ });
+ socket.on('qrcode', function(data) {
+     console.log(data)
+   const qrcode = document.getElementById('qrcode')
+   qrcode.src = data;
+ });
+ socket.on('status', function(data) {
+   console.log('status conexão', data);
+   const statusAtual = document.getElementById('status-atual')
+   statusAtual.innerHTML = data
+ });
+ socket.on('session', function(data) {
+   console.log('nome da sessão', data);
+   const sessao = document.getElementById('sessao')
+   sessao.innerHTML = data
+ });
+  createApp({
+    data() {
+      return {
+        number: '',
+        message: ''
+
+      }
+    },
+      computed: {
+
+      },
+    methods: {
+      iniciarSesssao: async () => {
+        try {
+          const resp = await fetch(`${window.location.origin}/start`)
+          console.log('loading false')
+        }catch (e) {
+          console.log(e)
+        }
+      },
+      enviarmensagem: () => {
+        const payload = {number: this.number, message: this.message}
+        console.log(payload)
+          console.log(this.number)
+            // fetch(`${window.location.origin}/enviarmensagem`, {
+            //   method: 'POST',
+            //   body: JSON.stringify(payload)
+            // }).then(() => {
+            //   alert("mensagem enviada!");
+            // })
+            //   .catch((e) => {
+            //   alert('Falha ao enviar mensagem!')
+            //   console.log(e)
+            // } )
+      }
+    },
+    created(){
+
+    },
+    mounted() {
+
+    }
+  }).mount('#app')
+
+  // const enviarMensagem = async (e) => {
+  //  e.preventDefault()
+  //   let numero = document.getElementById('numero').value
+  //   let mensagem = document.getElementById('mensagem').value
+  //   const payload = {number: numero, message: mensagem}
+  //     fetch(`${window.location.origin}/enviarmensagem`, {
+  //       method: 'POST',
+  //       body: payload
+  //     }).then(() => {
+  //       alert("mensagem enviada!");
+  //       document.getElementById('numero').value = ""
+  //       document.getElementById('mensagem').value = ""
+  //     })
+  //       .catch((e) => {
+  //       alert('Falha ao enviar mensagem!')
+  //       console.log(e)
+  //     } )
+  //     console.log(payload)
+  //   document.getElementById('numero').value = ""
+  //   document.getElementById('mensagem').value = ""
+  // }
+
+
+</script>
+</body>
+</html>
