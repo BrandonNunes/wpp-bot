@@ -3,10 +3,15 @@ import {Server} from "socket.io";
 import app from "./app";
 import {createSection, qrCodeBase64, sessionName, sessionStatus} from "./src/bot";
 
-const port = process.env.PORT || 9000;
+const port = process.env.PORT || 8000;
 
 const server = http.createServer(app)
-export const io = new Server(server);
+export const io = new Server(server, {
+   cors: {
+       origin: '*',
+       methods: ['GET', 'POST']
+   }
+});
 
 io.on('connection', (socket) => {
     console.log('a user connected');
